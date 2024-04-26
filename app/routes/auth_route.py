@@ -38,7 +38,7 @@ def get_all_users(db: Session = Depends(get_db)):
     users = db.query(models.User).all()
     return users
 
-@router.post("/register", response_model= list[schemas.UserOut])
+@router.post("/register", response_model= schemas.UserOut)
 def register(registerCredentials: schemas.UserCreate, db: Session = Depends(get_db)):
     # check for an existing user with the submitted email
     existing_user = db.query(models.User).filter(models.User.email == registerCredentials.email).first()
