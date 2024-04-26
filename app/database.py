@@ -5,7 +5,7 @@ import time
 
 # from .config import settings
 
-SQLALCHEMY_DATABASE_URL = f'postgresql://postgres:2020@localhost:5432/copy-trap'
+SQLALCHEMY_DATABASE_URL = f'postgresql://copy_trap:n6A5KBCl2yn5KAsdCa1OBeLidIjUkZqb@dpg-colpm5i1hbls7393st2g-a.frankfurt-postgres.render.com/copy_trap'
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
