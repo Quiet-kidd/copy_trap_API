@@ -1,8 +1,44 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import Optional
+
 class Token(BaseModel):
     access_token: str
     token_type: str
     
+class UserCreate(BaseModel):
+    name: str
+    phone_number: str
+    email: EmailStr
+    password: str
+
+class UserOut(BaseModel):
+    name: str
+    phone_number: str
+    email: EmailStr
+    id: int
+    
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+    
+class ReportCreate(BaseModel):
+    # matched_sources: Optional[str] = None
+    similarity_percentage: int
+    document_id: int
+    
+class ReportOut(ReportCreate):
+    pass
+    
 class TokenData(BaseModel):
     id: Optional[int] = None
+    
+class DocumentCreate(BaseModel):
+    user_id : int
+    title: str
+    content: str
+    
+class DocumentOut(DocumentCreate):
+    pass
+
+class LoginOut(Token):
+    user: UserOut

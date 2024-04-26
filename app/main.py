@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr
 
 from .database import engine, get_db
-from . import models
+from . import models, schemas
 from . import utils
 from .routes import documents_routes, reports_routes, auth_route
 

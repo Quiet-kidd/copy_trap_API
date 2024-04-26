@@ -4,7 +4,7 @@ from pydantic import BaseModel, EmailStr
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 
 from ..database import engine, get_db
-from .. import models
+from .. import models, schemas
 from .. import utils
 from ..routes import documents_routes, reports_routes
 from .. import oauth2 
@@ -13,18 +13,7 @@ models.Base.metadata.create_all(bind=engine)
 
 router = APIRouter(prefix="/auth",tags=['Auth'])
 
-class UserCreate(BaseModel):
-    name: str
-    phone_number: str
-    email: EmailStr
-    password: str
-
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
-
-
-@router.post("/login")
+@router.post("/login", response_model=schemas.LoginOut)
 def login(loginCredentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     # use the submitted email to find the user from database
     user = db.query(models.User).filter(models.User.email == loginCredentials.username).first()
@@ -44,13 +33,13 @@ def login(loginCredentials: OAuth2PasswordRequestForm = Depends(), db: Session =
 
     # print(loginCredentials)
     # return {f"user with: {loginCredentials.email} and password:{loginCredentials.password} has logged in"}
-@router.get("/users")
+@router.get("/users", response_model= list[schemas.UserOut])
 def get_all_users(db: Session = Depends(get_db)):
     users = db.query(models.User).all()
     return users
 
-@router.post("/register")
-def register(registerCredentials: UserCreate, db: Session = Depends(get_db)):
+@router.post("/register", response_model= list[schemas.UserOut])
+def register(registerCredentials: schemas.UserOut, db: Session = Depends(get_db)):
     # check for an existing user with the submitted email
     existing_user = db.query(models.User).filter(models.User.email == registerCredentials.email).first()
     

@@ -1,28 +1,25 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Response
 from ..database import get_db
 from ..models import Document
-from pydantic import BaseModel
+from typing import List
 from sqlalchemy.orm import Session
-from .. import oauth2
+from .. import oauth2, schemas
 router = APIRouter(prefix="/documents",tags=['Documents'])
 
-class DocumentCreate(BaseModel):
-    user_id : int
-    title: str
-    content: str
 
-@router.get("/")
+
+@router.get("/", response_model= List[schemas.DocumentOut])
 def get_all_documents(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user) ):
     documents = db.query(Document).all()
     return documents
 
-@router.get("/user/{id}")
+@router.get("/user/{id}", response_model= list[schemas.DocumentOut])
 def get_all_user_documents(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user) ):
     documents = db.query(Document).filter(Document.user_id == id).all()
     return documents
 
 @router.post("/")
-def save_document(documents_data: DocumentCreate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+def save_document(documents_data: schemas.DocumentOut, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     new_document= Document(title = documents_data.title, content = documents_data.content, user_id = documents_data.user_id)
     db.add(new_document)
     db.commit()
@@ -31,7 +28,7 @@ def save_document(documents_data: DocumentCreate, db: Session = Depends(get_db),
     return new_document
 
 @router.patch('/{id}')
-def update_document(id: int, updated_document_data: DocumentCreate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+def update_document(id: int, updated_document_data: schemas.DocumentOut, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     # create document_update query
     update_query = db.query(Document).filter(Document.id == id)
     # use the query to find the particular document
