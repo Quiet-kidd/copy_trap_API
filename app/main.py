@@ -1,16 +1,22 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Response
-from sqlalchemy.orm import Session
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 
-from .database import engine, get_db
-from . import models, schemas
-from . import utils
+from .database import engine
+from . import models
 from .routes import documents_routes, reports_routes, auth_route
 
 models.Base.metadata.create_all(bind=engine)
 
 app= FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins =["*"],
+    allow_credentials = True,
+    allow_methods = ["*"],
+    allow_headers = ["*"]
+)
 
 class UserCreate(BaseModel):
     name: str
