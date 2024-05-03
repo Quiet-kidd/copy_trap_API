@@ -15,6 +15,7 @@ router = APIRouter(prefix="/auth",tags=['Auth'])
 
 @router.post("/login", response_model=schemas.LoginOut)
 def login(loginCredentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    print(loginCredentials)
     # use the submitted email to find the user from database
     user = db.query(models.User).filter(models.User.email == loginCredentials.username).first()
     

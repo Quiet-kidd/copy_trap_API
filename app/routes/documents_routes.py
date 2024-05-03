@@ -1,12 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, Depends, HTTPException, status, Response, UploadFile, File, Form
+import httpx
+import base64
+import os
 from ..database import get_db
-from ..models import Document
+from ..models import Document, User
 from typing import List
 from sqlalchemy.orm import Session
 from .. import oauth2, schemas
 router = APIRouter(prefix="/documents",tags=['Documents'])
-
-
 
 @router.get("/", response_model= List[schemas.DocumentOut])
 def get_all_documents(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user) ):
@@ -19,8 +20,22 @@ def get_all_user_documents(id: int, db: Session = Depends(get_db), current_user:
     return documents
 
 @router.post("/")
-def save_document(documents_data: schemas.DocumentOut, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    new_document= Document(title = documents_data.title, content = documents_data.content, user_id = documents_data.user_id)
+async def save_document(file: UploadFile = File(...), db: Session = Depends(get_db), current_user: User = Depends(oauth2.get_current_user)):
+    if not file.filename.endswith(('.txt', '.docx', '.pdf')):
+        raise HTTPException(status_code= 400, detail="Invalid file format. Please upload .txt, .docx or .pdf files")
+
+    # Extract title from filename
+    title = os.path.splitext(file.filename)[0]
+    
+    # Read file content in binary mode
+    file_content = await file.read()
+
+    #Encode file content to base 64
+    encoded_content = base64.b64encode(file_content).decode('utf-8')
+
+    print(title, encoded_content)
+    
+    new_document= Document(title = title, content = encoded_content, user_id = current_user.id)
     db.add(new_document)
     db.commit()
     db.refresh(new_document)
