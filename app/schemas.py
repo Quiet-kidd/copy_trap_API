@@ -16,7 +16,7 @@ class UserOut(BaseModel):
     phone_number: str
     email: EmailStr
     id: int
-    
+    created_at: str
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
@@ -27,7 +27,8 @@ class ReportCreate(BaseModel):
     document_id: int
     
 class ReportOut(ReportCreate):
-    pass
+    id: int
+    created_at: str
     
 class TokenData(BaseModel):
     id: Optional[int] = None
@@ -38,7 +39,9 @@ class DocumentCreate(BaseModel):
     content: str
     
 class DocumentOut(DocumentCreate):
-    pass
+    id: int
+    created_at: str
 
 class LoginOut(Token):
     user: UserOut
+    
