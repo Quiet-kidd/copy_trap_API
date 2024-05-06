@@ -41,3 +41,13 @@ class Report(Base):
     document_id = Column(Integer, ForeignKey("documents.id"))
     
     document = relationship("Document", back_populates="report")
+    
+class Scan(Base):
+    __tablename__ = "scans"
+    
+    id = Column(Integer,primary_key= True, index= True)
+    created_at = Column(TIMESTAMP(timezone=True), nullable= False, server_default= text('now()'))
+    document_id = Column(Integer)
+    user_id = Column(Integer)
+    scan_id = Column(String)    
+    

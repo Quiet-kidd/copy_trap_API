@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Response, UploadFile, File, Form
 import httpx
 import base64
+import uuid
 import os
 from ..database import get_db
-from ..models import Document, User
+from ..models import Document, User, Scan
 from typing import List
 from sqlalchemy.orm import Session
 from .. import oauth2, schemas
@@ -20,7 +21,7 @@ def get_all_user_documents(id: int, db: Session = Depends(get_db), current_user:
     return documents
 
 @router.post("/")
-async def save_document(file: UploadFile = File(...), db: Session = Depends(get_db), current_user: User = Depends(oauth2.get_current_user)):
+async def save_document(api_key: str = Form(...), file: UploadFile = File(...), db: Session = Depends(get_db), current_user: User = Depends(oauth2.get_current_user)):
     if not file.filename.endswith(('.txt', '.docx', '.pdf')):
         raise HTTPException(status_code= 400, detail="Invalid file format. Please upload .txt, .docx or .pdf files")
 
@@ -32,15 +33,50 @@ async def save_document(file: UploadFile = File(...), db: Session = Depends(get_
 
     #Encode file content to base 64
     encoded_content = base64.b64encode(file_content).decode('utf-8')
-
-    print(title, encoded_content)
-    
+        
     new_document= Document(title = title, content = encoded_content, user_id = current_user.id)
     db.add(new_document)
     db.commit()
     db.refresh(new_document)
     
-    return new_document
+    # create scan id
+    scan_id = str(uuid.uuid4())
+    # initialise scan to the database
+    new_scan = Scan(scan_id = scan_id, document_id = new_document.id, user_id = current_user.id)
+    db.add(new_scan)
+    db.commit()
+    db.refresh(new_scan)
+    print(new_scan)
+    # prepare copyleaks headers
+    headers = {
+        'Authorization': f'Bearer {api_key}',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    }
+    # prepare copyleaks payload
+    payload = {
+        "base64": encoded_content,
+        "filename": file.filename,
+        "properties":{
+            "webhooks": {
+                "status": f"https://copy-trap-api.onrender.com/report/webhook/{{STATUS}}/{new_document.id}",
+                "statusHeaders":[
+                    ['Content-Type', 'application/json'],
+                    ['Accept', 'application/json']
+                ]
+            }
+        }
+    }
+    
+    # initialise scan with copyleaks api
+    ENDPOINT = 'https://api.copyleaks.com/v3/scans/submit/file/{scanId}'
+    
+    endpoint_url = ENDPOINT.format(scanId= scan_id)
+    async with httpx.AsyncClient() as client:
+        response = await client.put(endpoint_url, headers=headers, json=payload)
+            
+    print(response)       
+    return response
 
 @router.patch('/{id}')
 def update_document(id: int, updated_document_data: schemas.DocumentOut, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):

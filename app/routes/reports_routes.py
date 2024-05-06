@@ -22,8 +22,6 @@ def save_report(status: str, document_id: str, payload: dict, db: Session = Depe
     
     return new_report
 
-
-
 @router.delete('/{id}')
 def delete_report(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     # find a document with the given id
