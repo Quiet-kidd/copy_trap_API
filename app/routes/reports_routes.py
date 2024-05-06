@@ -13,9 +13,9 @@ def get_all_reports(db: Session = Depends(get_db), current_user: int = Depends(o
     report = db.query(Report).all()
     return report
 
-@router.post("/" , response_model= schemas.ReportOut)
-def save_report(report_data: schemas.ReportOut, db: Session = Depends(get_db)):
-    new_report = Report(**report_data.model_dump())
+@router.post("/webhook/{status}/{document_id}" , response_model= schemas.ReportOut)
+def save_report(status: str, document_id: str, payload: dict, db: Session = Depends(get_db)):
+    new_report = Report(status = status, document_id = document_id, payload = payload)
     db.add(new_report)
     db.commit()
     db.refresh(new_report)

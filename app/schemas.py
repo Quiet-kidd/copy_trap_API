@@ -24,7 +24,8 @@ class UserLogin(BaseModel):
     
 class ReportCreate(BaseModel):
     # matched_sources: Optional[str] = None
-    similarity_percentage: int
+    payload: dict
+    status: str
     document_id: int
     
 class ReportOut(ReportCreate):
