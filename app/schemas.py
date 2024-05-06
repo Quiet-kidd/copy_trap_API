@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr
+from datetime import datetime
 from typing import Optional
 
 class Token(BaseModel):
@@ -16,7 +17,7 @@ class UserOut(BaseModel):
     phone_number: str
     email: EmailStr
     id: int
-    created_at: str
+    created_at: datetime
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
@@ -28,7 +29,7 @@ class ReportCreate(BaseModel):
     
 class ReportOut(ReportCreate):
     id: int
-    created_at: str
+    created_at: datetime
     
 class TokenData(BaseModel):
     id: Optional[int] = None
@@ -40,7 +41,7 @@ class DocumentCreate(BaseModel):
     
 class DocumentOut(DocumentCreate):
     id: int
-    created_at: str
+    created_at: datetime
 
 class LoginOut(Token):
     user: UserOut
