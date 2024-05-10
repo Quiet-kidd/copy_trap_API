@@ -47,3 +47,12 @@ class DocumentOut(DocumentCreate):
 class LoginOut(Token):
     user: UserOut
     
+class ScanCreate(BaseModel):
+    id: int
+    created_at: datetime
+    document_id: int
+    
+class ScanOut(ScanCreate):
+    user_id: int
+    scan_id: str
+    

@@ -4,7 +4,7 @@ from pydantic import BaseModel, EmailStr
 
 from .database import engine
 from . import models
-from .routes import documents_routes, reports_routes, auth_route
+from .routes import documents_routes, reports_routes, auth_route, scans_routes
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -36,3 +36,4 @@ def home_page():
 app.include_router(documents_routes.router)
 app.include_router(reports_routes.router)
 app.include_router(auth_route.router)
+app.include_router(scans_routes.router)

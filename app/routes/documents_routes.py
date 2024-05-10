@@ -8,6 +8,7 @@ from ..models import Document, User, Scan
 from typing import List
 from sqlalchemy.orm import Session
 from .. import oauth2, schemas
+
 router = APIRouter(prefix="/documents",tags=['Documents'])
 
 @router.get("/", response_model= List[schemas.DocumentOut])
@@ -46,7 +47,6 @@ async def save_document(api_key: str = Form(...), file: UploadFile = File(...), 
     db.add(new_scan)
     db.commit()
     db.refresh(new_scan)
-    print(new_scan)
     # prepare copyleaks headers
     headers = {
         'Authorization': f'Bearer {api_key}',
@@ -60,10 +60,10 @@ async def save_document(api_key: str = Form(...), file: UploadFile = File(...), 
         "properties":{
             "webhooks": {
                 "status": f"https://copy-trap-api.onrender.com/report/webhook/{{STATUS}}/{new_document.id}",
-                "statusHeaders":[
-                    ['Content-Type', 'application/json'],
-                    ['Accept', 'application/json']
-                ]
+                # "statusHeaders":[
+                #     ['Content-Type', 'application/json'],
+                #     ['Accept', 'application/json']
+                # ]
             }
         }
     }
@@ -72,11 +72,17 @@ async def save_document(api_key: str = Form(...), file: UploadFile = File(...), 
     ENDPOINT = 'https://api.copyleaks.com/v3/scans/submit/file/{scanId}'
     
     endpoint_url = ENDPOINT.format(scanId= scan_id)
+    print(headers)
     async with httpx.AsyncClient() as client:
         response = await client.put(endpoint_url, headers=headers, json=payload)
             
-    print(response)       
-    return response
+    print(response)
+    
+    if response.status_code == 200:
+        results = response.json()       
+        return results
+    else:
+        raise HTTPException(status_code=response.status_code, detail=response.text)
 
 @router.patch('/{id}')
 def update_document(id: int, updated_document_data: schemas.DocumentOut, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
